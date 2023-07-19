@@ -9,8 +9,11 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
+import java.awt.Font;
+import java.awt.BorderLayout;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -78,7 +81,8 @@ public class Tetris extends JPanel implements ActionListener {
     private int currentPiece;
     private int rotation;
     private ArrayList<Integer> nextPieces = new ArrayList<Integer>();
-
+    private JLabel scoreLabel;
+    
     private long score;
     private Color[][] well;
 
@@ -94,12 +98,35 @@ public class Tetris extends JPanel implements ActionListener {
                 }
             }
         }
+        scoreLabel = new JLabel("Score: " + score);
+        scoreLabel.setForeground(Color.WHITE);
+        scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        scoreLabel.setPreferredSize(new Dimension(100, 30));
+        scoreLabel.setBounds(124, 0, 100, 30);
+        setLayout(null); // Устанавливаем менеджер компоновки null
+        add(scoreLabel);
+        scoreLabel.setLocation(125, 0); // Устанавливаем координаты метки
         newPiece();
+        //amslkncasjk
     }
 
+    
+
+  public void removeShapesAtTop() {
+    for (int j = 0; j < 4; j++) {
+        for (int i = 1; i < 11; i++) {
+            if (well[i][j] != Color.BLACK) {
+                // Shape reached the top, end the game
+                JOptionPane.showMessageDialog(this, "Game Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                System.exit(0);
+            }
+        }
+    }
+}
+    
     // Put a new, random piece into the dropping position
     public void newPiece() {
-        pieceOrigin = new Point(5, 2);
+        pieceOrigin = new Point( 5, 1);
         rotation = 0;
         if (nextPieces.isEmpty()) {
             Collections.addAll(nextPieces, 0, 1, 2, 3, 4, 5, 6);
@@ -117,7 +144,8 @@ public class Tetris extends JPanel implements ActionListener {
             }
         }
         return false;
-    }// Rotate the piece clockwise or counterclockwise
+    }
+    // Rotate the piece clockwise or counterclockwise
     public void rotate(int i) {
         int newRotation = (rotation + i) % 4;
         if (newRotation < 0) {
@@ -143,9 +171,12 @@ public class Tetris extends JPanel implements ActionListener {
             pieceOrigin.y += 1;
         } else {
             fixToWell();
-        }
+            removeShapesAtTop();
+             
+     }
         repaint();
     }
+    
 
     // Make the dropping piece part of the well, so it is available for
  // checking for lines and doesn't interfere with other pieces
@@ -200,7 +231,11 @@ public class Tetris extends JPanel implements ActionListener {
                 score += 800;
                 break;
         }
+        scoreLabel.setText("Score: " + score);
     }
+
+    
+    
 
     // Draw the falling piece
     private void drawPiece(Graphics g) {
@@ -213,18 +248,21 @@ public class Tetris extends JPanel implements ActionListener {
     }
 
     @Override
-    public void paintComponent(Graphics g)
-    {
-        // Paint the well
-        g.fillRect(0, 0, 26*12, 26*23);
-        for (int i = 0; i < 12; i++) {
-            for (int j = 0; j < 23; j++) {
-                g.setColor(well[i][j]);
-                g.fillRect(26*i, 26*j, 25, 25);
-            }
-        }    // Draw the currently falling piece
-        drawPiece(g);
+public void paintComponent(Graphics g) {
+    // Paint the well
+    g.fillRect(0, 0, 26*12, 26*23);
+
+    for (int i = 0; i < 12; i++) {
+        for (int j = 0; j < 23; j++) {
+            g.setColor(well[i][j]);
+            g.fillRect(26*i, 26*j, 25, 25);
+            
+        }
     }
+    // Draw the currently falling piece
+    drawPiece(g);
+}
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -241,17 +279,17 @@ public class Tetris extends JPanel implements ActionListener {
     public static void main (String[] args) {
         JFrame f = new JFrame("Tetris");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(12*26+10, 26*23+25);
         f.setVisible(true);
-
+        f.setSize(12*26+10, 26*23+25);
+    
         final Tetris game = new Tetris();
         game.init();
         f.add(game);
-
+    
+       
         // Keyboard controls
         f.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {
-            }
+            public void keyTyped(KeyEvent e) {}
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_UP:
@@ -267,16 +305,13 @@ public class Tetris extends JPanel implements ActionListener {
                     case KeyEvent.VK_RIGHT:
                         game.move(+1);
                         break;
-
                 }
             }
-            public void keyReleased(KeyEvent e) {
-            }
+            public void keyReleased(KeyEvent e) {}
         });
-
+    
         // Make the falling piece drop every second
         new Timer(1000, game.new MyTimerListener()).start();
     }
-    // Drop the piece all the way down and fix it to the well
-
 }
+
